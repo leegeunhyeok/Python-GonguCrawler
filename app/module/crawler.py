@@ -25,6 +25,21 @@ class Crawler:
 		# 설정 파일 불러오기
 		self.config = config_reader.read()
 
+		if not os.path.exists("../../img"):
+        os.mkdir("../../img")
+    
+		if not os.path.exists("../../img/license"):
+			os.mkdir("../../img/license")
+
+		if not os.path.exists("../../img/origin"):
+			os.mkdir("../../img/origin")
+
+		if not os.path.exists("../../img/thumbnail"):
+			os.mkdir("../../img/thumbnail") 
+
+		if not os.path.exists("../../log"):
+			os.mkdir("../../log")
+
 
 	# 해당 페이지의 저작물 링크 추출
 	# @param: 저작물 리스트 페이지 URL
