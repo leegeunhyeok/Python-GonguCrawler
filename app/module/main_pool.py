@@ -251,6 +251,8 @@ def attrQuery(title):
         return "original_size"
     elif title == u"원저작물소장처":
         return "original_collection"
+    elif title == "추가사항":
+        return "details"
     else:
         raise RuntimeError("알 수 없는 상세정보")
 
