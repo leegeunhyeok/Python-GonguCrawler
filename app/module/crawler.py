@@ -26,7 +26,7 @@ class Crawler:
 		self.config = config_reader.read()
 
 		if not os.path.exists("../../img"):
-        os.mkdir("../../img")
+			os.mkdir("../../img")
     
 		if not os.path.exists("../../img/license"):
 			os.mkdir("../../img/license")
