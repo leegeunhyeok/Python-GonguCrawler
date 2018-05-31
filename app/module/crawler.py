@@ -9,6 +9,7 @@ import time
 import multiprocessing
 import shutil
 import sys
+import base64
 
 # 설정파일 관련 모듈 Import
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), './common'))
@@ -80,13 +81,7 @@ class Crawler:
 	# idx: 페이지 리스트의 인덱스(multiprocess.Value)
 	# lock: 프로세스간 동기화를 위해 Lock 사용
 	def get_item_data(self, work, idx, lock):
-		host = self.config["database"]["host"]
-		port = self.config["database"]["port"]
-		user = self.config["database"]["user"]
-		password = self.config["database"]["password"]
-		db = self.config["database"]["database"]
-
-		conn = pymysql.connect(host=host, port=port, user=user, password=password, db=db, charset="utf8", connect_timeout=5, write_timeout=5, read_timeout=5)
+		conn = self.create_connection()
 		cur = conn.cursor()
 
 
@@ -198,6 +193,7 @@ class Crawler:
 			# 파일이 존재하지 않는 경우에만 다운로드
 			if not self.duplicateCheck(file_name, "../../img/origin/"):
 				urllib.request.urlretrieve(base_url + img_src, "../../img/origin/" + file_name)
+				self.base64_encode(_id, conn, cur)
 			else:
 				print("이미 존재하는 이미지:", file_name)
 
@@ -221,6 +217,22 @@ class Crawler:
 			pass
 		except Exception as e:
 			self.save_log(_id, str(e))  # 기타 예외사항은 로그에 기록
+    
+	
+	# 다운로드 받은 이미지를 Base64로 인코딩하여 저장
+	# @param: 게시글 ID
+	# @param: 데이터베이스 커넥션
+	# @param: 데이터베이스 커서
+	def base64_encode(self, id, conn, cur):
+		try:
+			with open("../../img/origin/" + id + ".png", "rb") as image:
+				encoded = base64.b64encode(image.read())
+				cur.execute("INSERT INTO encoded VALUES ({}, \"{}\")".format(id, encoded))
+				conn.commit()
+		except Exception as e:
+			print(e)
+			self.save_log(id, "BASE64 ENCODE ERROR")
+        
 
 	# 게시글 URL의 wrtSn값 추출
 	# @param: 게시글 URL
@@ -315,14 +327,14 @@ class Crawler:
 	# @param 저작물 ID
 	# @param 에러 메시지
 	def save_log(self, id, err=""):
-		f = open("../../log/" + self.log_name + ".log", "a", encoding="utf-8")
+		f = open("../../log/" + self.start_time + ".log", "a", encoding="utf-8")
 		f.write(id + " : " + err + "\n")
 		f.close()
 
 	# 저장된 로그를 읽어서 저작물 ID만 추출하여 반환
 	# @return 저작물 ID 리스트
 	def error_list(self):
-		f = open("../../log/" + self.log_name + ".log", "r", encoding="utf-8")
+		f = open("../../log/" + self.start_time + ".log", "r", encoding="utf-8")
 
 		# 한 줄씩 파일 읽기 
 		lines = f.readlines()
@@ -345,15 +357,14 @@ class Crawler:
 		start_page = 1 
 
 		# 마지막 페이지
-		max_page = 2 
+		max_page = 1
 		
 		# 프로세스 수
 		process_count = 8  
 
 		# 로그 파일 명(크롤러 실행 시간)
-		self.log_name = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
-		print(self.log_name, "크롤러 실행")
-		print("저장될 로그 파일 명:", self.log_name + ".log")
+		self.start_time = time.strftime("%Y-%m-%d_%H%M%S", time.localtime())
+		print(self.start_time, "크롤러 실행")
 		
 		# 프로세스간 메모리 동기화를 위해 사용
 		lock = multiprocessing.Lock()
@@ -379,6 +390,9 @@ class Crawler:
 			else:
 				print("초기화를 진행하지 않았습니다.")
 
+		with open("../../log/" + self.start_time + ".log", "w") as log:
+			log.write("[" + self.start_time + "]\n")
+
 		print("{}~{} 페이지 크롤링 시작".format(start_page, max_page))
 		
 		# 프로세스 수 만큼 프로세스 생성
@@ -396,13 +410,7 @@ class Crawler:
 
 		try:
 			print("\n\n== 문제 발생 저작물 크롤링 재시도 ==")
-			host = self.config["database"]["host"]
-			port = self.config["database"]["port"]
-			user = self.config["database"]["user"]
-			password = self.config["database"]["password"]
-			db = self.config["database"]["database"]
-
-			conn = pymysql.connect(host=host, port=port, user=user, password=password, db=db, charset="utf8", connect_timeout=5, write_timeout=5, read_timeout=5)
+			conn = self.create_connection()
 			cur = conn.cursor()
 
 			for err in self.error_list():
@@ -416,11 +424,34 @@ class Crawler:
 		finally:
 			print("== 문제 발생 저작물 크롤링 종료 ==")
 
+
+	# DB 커넥션 생성 함수
+	# config 데이터를 읽고 해당 정보로 접속
+	def create_connection(self):
+		host = self.config["database"]["host"]
+		port = self.config["database"]["port"]
+		user = self.config["database"]["user"]
+		password = self.config["database"]["password"]
+		db = self.config["database"]["database"]
+
+		return pymysql.connect(host=host, port=port, user=user, password=password, db=db, charset="utf8", connect_timeout=5, write_timeout=5, read_timeout=5)
+
 	# 저장된 이미지 및 DB 데이터 초기화
 	def data_reset(self):
 		try:
-			# self.cur.execute("DELETE FROM crawler")
-			# self.conn.commit()
+			conn = self.create_connection()
+			cur = conn.cursor()
+
+			cur.execute("DELETE FROM crawler")
+			cur.execute("DELETE FROM encoded")
+			conn.commit()
+
+			cur.close()
+			conn.close()
+		except Exception as e:
+			print(e)
+
+		try:
 			shutil.rmtree('../../img/thumbnail/')
 			shutil.rmtree('../../img/origin/')
 			shutil.rmtree('../../img/license/')
