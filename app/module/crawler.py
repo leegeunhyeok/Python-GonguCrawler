@@ -187,7 +187,7 @@ class Crawler:
 
 			try:
 				# 라이선스 이미지 해시값 저장
-				cur.execute("INSERT INTO encoded_license VALUES (\"{}\", \"{}\", \"{}\")".format(copy_file, copy_text, copy_encoded))
+				cur.execute("INSERT INTO encoded_license VALUES (%s, %s, %s)", (copy_file, copy_text, copy_encoded.decode("utf-8")))
 				conn.commit()
 			except pymysql.err.IntegrityError as e:
 				# PK 중복 오류
@@ -251,7 +251,7 @@ class Crawler:
 
 			try:
 				# 인코딩 데이터 저장
-				cur.execute("INSERT INTO encoded_image VALUES ({}, \"{}\", \"{}\")".format(_id, file_name, encoded))
+				cur.execute("INSERT INTO encoded_image VALUES (%s, %s, %s)", (_id, file_name, encoded.decode("utf-8")))
 				conn.commit()
 			except:
 				self.save_log("{} : {}".format(_id, "Origin image hash data save error"))
@@ -385,7 +385,7 @@ class Crawler:
 			output.close()
 
 			# DB에 해시값 저장
-			cur.execute("INSERT INTO encoded_thumbnail VALUES ({}, \"{}\", \"{}\")".format(_id, image_name, encoded))
+			cur.execute("INSERT INTO encoded_thumbnail VALUES (%s, %s, %s)", (_id, image_name, encoded.decode("utf-8")))
 			conn.commit()
 
 			# 설정을 참조하여 썸네일 이미지 로컬에 저장

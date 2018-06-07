@@ -1,3 +1,6 @@
+"""
+Base64 해시 데이터 텍스트 저장 테스트
+"""
 import base64
 
 with open("test2.png", "rb") as image:
