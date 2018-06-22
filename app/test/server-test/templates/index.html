@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>FLASK REST API</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+      $(function () {
+        $('#data-count').click(function () {
+          $.ajax({
+            url: '/info/DataCount',
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              console.log(result)
+              $('#result').text(JSON.stringify(result))
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#config-info').click(function () {
+          $.ajax({
+            url: '/info/ConfigInfo',
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              console.log(result)
+              $('#result').text(JSON.stringify(result))
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#resorce-size').click(function () {
+          $.ajax({
+            url: '/info/ResorceSize',
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              console.log(result)
+              $('#result').text(JSON.stringify(result))
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#get-all').click(function () {
+          $.ajax({
+            url: '/data',
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              console.log(result)
+              $('#result').text(result.result)
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#del-all').click(function () {
+          $.ajax({
+            url: '/data',
+            dataType: 'json',
+            method: 'DELETE',
+            success (result) {
+              console.log(result)
+              $('#result').text(result.result)
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#get-id').click(function () {
+          const value = $('#id-val').val()
+
+          if (value === '') {
+            $('#result').text('아이디를 입력해주세요')
+            return
+          }
+
+          $.ajax({
+            url: '/data/' + value,
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              console.log(result)
+              if (result.hash) {
+                result['hash'] = '해시데이터는 너무 길어서 임시 문자열로 변경 됨'
+              }
+              $('#result').text(JSON.stringify(result))
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#del-id').click(function () {
+          const value = $('#id-val').val()
+
+          if (value === '') {
+            $('#result').text('아이디를 입력해주세요')
+            return
+          }
+
+          $.ajax({
+            url: ('/data/' + value),
+            dataType: 'json',
+            method: 'DELETE',
+            success (result) {
+              console.log(result)
+              $('#result').text(JSON.stringify(result))
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div>
+      <button id="data-count">GET /info/DataCount</button>
+    </div>
+    <div>
+      <button id="config-info">GET /info/ConfigInfo</button>
+    </div>
+    <div>
+      <button id="resorce-size">GET /info/ResorceSize</button>
+    </div>
+    <div>
+      <button id="get-all">GET /data</button>
+    </div>
+    <div>
+      <button id="del-all">DELETE /data</button>
+    </div>
+    <div>
+      <input placeholder=":id" id="id-val">
+      <button id="get-id">GET /data/:id</button>
+      <button id="del-id">DELETE /data/:id</button>
+    </div>
+    <div id="result" style="background-color: bisque;">
+      결과
+    </div>
+  </body>
+</html>

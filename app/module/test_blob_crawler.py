@@ -10,6 +10,7 @@ import multiprocessing
 import shutil
 import sys
 import base64
+import zlib
 from io import BytesIO
 
 # 설정파일 관련 모듈 Import
