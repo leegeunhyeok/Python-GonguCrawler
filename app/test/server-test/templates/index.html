@@ -3,7 +3,10 @@
   <head>
     <meta charset="utf-8">
     <title>FLASK REST API</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
       $(function () {
         $('#data-count').click(function () {
@@ -13,7 +16,9 @@
             method: 'GET',
             success (result) {
               console.log(result)
-              $('#result').text(JSON.stringify(result))
+              $('#result').html('')
+              $('#image').attr('src', '')
+              $('#result-area').text(JSON.stringify(result))
             },
             error (e) {
               console.log(e)
@@ -28,7 +33,9 @@
             method: 'GET',
             success (result) {
               console.log(result)
-              $('#result').text(JSON.stringify(result))
+              $('#result').html('')
+              $('#image').attr('src', '')
+              $('#result-area').text(JSON.stringify(result))
             },
             error (e) {
               console.log(e)
@@ -43,7 +50,9 @@
             method: 'GET',
             success (result) {
               console.log(result)
-              $('#result').text(JSON.stringify(result))
+              $('#result').html('')
+              $('#image').attr('src', '')
+              $('#result-area').text(JSON.stringify(result))
             },
             error (e) {
               console.log(e)
@@ -58,7 +67,9 @@
             method: 'GET',
             success (result) {
               console.log(result)
-              $('#result').text(result.result)
+              $('#result').html('')
+              $('#image').attr('src', '')
+              $('#result-area').text(result.result)
             },
             error (e) {
               console.log(e)
@@ -73,7 +84,9 @@
             method: 'DELETE',
             success (result) {
               console.log(result)
-              $('#result').text(result.result)
+              $('#result').html('')
+              $('#image').attr('src', '')
+              $('#result-area').text(result.result)
             },
             error (e) {
               console.log(e)
@@ -94,11 +107,32 @@
             dataType: 'json',
             method: 'GET',
             success (result) {
-              console.log(result)
+              
+              /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
               if (result.hash) {
+                $('#image').attr('src', 'data:image/png;base64,' + result.hash)
                 result['hash'] = '해시데이터는 너무 길어서 임시 문자열로 변경 됨'
+              } else {
+                $('#image').attr('src', '')
               }
-              $('#result').text(JSON.stringify(result))
+
+              $('#result-area').text(JSON.stringify(result))
+              
+              /* 기존 영역 지우기 */
+              $('#result').html('')
+
+              Object.keys(result.info).forEach(k => {
+                if (result.info[k]) {
+                  let row = 
+                  `<tr>
+                    <td>${k.toUpperCase()}</td>
+                    <td>${result.info[k]}</td>
+                  </tr>`
+
+                  /* 표 영역에 추가 */
+                  $('#result').append(row)
+                }
+              })
             },
             error (e) {
               console.log(e)
@@ -110,7 +144,7 @@
           const value = $('#id-val').val()
 
           if (value === '') {
-            $('#result').text('아이디를 입력해주세요')
+            $('#result-area').text('아이디를 입력해주세요')
             return
           }
 
@@ -129,30 +163,69 @@
         })
       })
     </script>
+    <style>
+      
+      button {
+        margin: 0px 5px;
+      }
+
+    </style>
   </head>
   <body>
-    <div>
-      <button id="data-count">GET /info/DataCount</button>
-    </div>
-    <div>
-      <button id="config-info">GET /info/ConfigInfo</button>
-    </div>
-    <div>
-      <button id="resorce-size">GET /info/ResorceSize</button>
-    </div>
-    <div>
-      <button id="get-all">GET /data</button>
-    </div>
-    <div>
-      <button id="del-all">DELETE /data</button>
-    </div>
-    <div>
-      <input placeholder=":id" id="id-val">
-      <button id="get-id">GET /data/:id</button>
-      <button id="del-id">DELETE /data/:id</button>
-    </div>
-    <div id="result" style="background-color: bisque;">
-      결과
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Flask REST API TEST</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="https://github.com/leegeunhyeok/Python-GonguCrawler/tree/master/app/test/server-test">SourceCode</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-heading">API 테스트</div>
+        <div class="panel-body">
+          <div class="row" style="text-align: center;">
+            <button id="data-count" class="btn btn-default">GET /info/DataCount</button>
+            <button id="config-info" class="btn btn-default">GET /info/ConfigInfo</button>
+            <button id="resorce-size" class="btn btn-default">GET /info/ResorceSize</button>
+            <button id="get-all" class="btn btn-default">GET /data</button>
+            <button id="del-all" class="btn btn-default">DELETE /data</button>
+          </div>
+          <div class="row" style="text-align: center; margin-top: 50px;">
+            <div style="margin: auto; display: inline-block;">
+              <input placeholder=":id" id="id-val" class="form-control" style="width: 100px;">
+            </div>
+            <button id="get-id" class="btn btn-primary">GET /data/:id</button>
+            <button id="del-id" class="btn btn-danger">DELETE /data/:id</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default" style="margin-bottom: 10px;">
+          <div class="panel-heading">결과</div>
+          <div class="panel-body" id="result-area"></div>
+      </div>
+      <div class="panel panel-primary" style="margin-bottom: 100px;">
+        <div class="panel-heading">저작물 조회 정보</div>
+        <div class="panel-body">
+          <div id="image-area" style="text-align: center; margin-bottom: 50px;">
+            <img id="image">
+          </div>
+          <table class="table table-hover table-bordered">
+            <thead>
+              <tr>
+                <th width="30%">상세정보</th>
+                <th>내용</th>
+              </tr>
+            </thead>
+            <tbody id="result">
+              <!-- 상세정보 내용 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </body>
 </html>
