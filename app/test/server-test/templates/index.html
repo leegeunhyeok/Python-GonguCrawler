@@ -11,7 +11,7 @@
       $(function () {
         $('#data-count').click(function () {
           $.ajax({
-            url: '/info/DataCount',
+            url: '/info/datacount',
             dataType: 'json',
             method: 'GET',
             success (result) {
@@ -28,24 +28,7 @@
 
         $('#config-info').click(function () {
           $.ajax({
-            url: '/info/ConfigInfo',
-            dataType: 'json',
-            method: 'GET',
-            success (result) {
-              console.log(result)
-              $('#result').html('')
-              $('#image').attr('src', '')
-              $('#result-area').text(JSON.stringify(result))
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#resorce-size').click(function () {
-          $.ajax({
-            url: '/info/ResorceSize',
+            url: '/info/setting',
             dataType: 'json',
             method: 'GET',
             success (result) {
@@ -61,15 +44,23 @@
         })
 
         $('#get-all').click(function () {
+          const start = $('#start-val').val()
+          const count = $('#count-val').val()
+
           $.ajax({
-            url: '/data',
+            url: `/data?start=${start}&count=${count}`,
             dataType: 'json',
             method: 'GET',
             success (result) {
-              console.log(result)
+              let count = 0
+              console.log(result.list)
               $('#result').html('')
+              $('#result-area').html('')
               $('#image').attr('src', '')
-              $('#result-area').text(result.result)
+              for (let image of result.list) {
+                $('#result-area').append(`<img style="width: 100px; height: 100px;"src="data:image/png;base64,${image.hash}"><br>`)
+                $('#result-area').append(`저작물 ID: ${image.id}<br>해시값은 임시로 대체 됨<br>${JSON.stringify(image.info)}<br><br><br>`)
+              }
             },
             error (e) {
               console.log(e)
@@ -101,38 +92,115 @@
             $('#result').text('아이디를 입력해주세요')
             return
           }
-
+          
           $.ajax({
-            url: '/data/' + value,
+            url: '/info/original',
+            data: {id: value},
             dataType: 'json',
             method: 'GET',
+            async: false,
             success (result) {
-              
-              /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
-              if (result.hash) {
-                $('#image').attr('src', 'data:image/png;base64,' + result.hash)
-                result['hash'] = '해시데이터는 너무 길어서 임시 문자열로 변경 됨'
-              } else {
-                $('#image').attr('src', '')
-              }
-
+              console.log(result)
               $('#result-area').text(JSON.stringify(result))
               
               /* 기존 영역 지우기 */
               $('#result').html('')
+              try {
+                Object.keys(result).forEach(k => {
+                  if (result[k]) {
+                    let row = 
+                    `<tr>
+                      <td>${k.toUpperCase()}</td>
+                      <td>${result[k]}</td>
+                    </tr>`
 
-              Object.keys(result.info).forEach(k => {
-                if (result.info[k]) {
-                  let row = 
-                  `<tr>
-                    <td>${k.toUpperCase()}</td>
-                    <td>${result.info[k]}</td>
-                  </tr>`
+                    /* 표 영역에 추가 */
+                    $('#result').append(row)
+                  }
+                })
+              } catch (e) {
+                console.log('저작물이 없습니다.')
+              }
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+          
+          $.ajax({
+            url: '/info/hash/original',
+            data: {id: value},
+            dataType: 'json',
+            method: 'GET',
+            async: false,
+            success (result) {
+              console.log(result)
+              /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
+              if (result.hashimg) {
+                $('#image').attr('src', 'data:image/png;base64,' + result.hashimg)
+              } else {
+                $('#image').attr('src', '')
+              }
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
 
-                  /* 표 영역에 추가 */
-                  $('#result').append(row)
-                }
-              })
+          $.ajax({
+            url: '/info/hash/thumbnail',
+            data: {id: value},
+            dataType: 'json',
+            method: 'GET',
+            async: false,
+            success (result) {
+              console.log(result)
+              /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
+              if (result.hashthumbnail) {
+                $('#image-thumb').attr('src', 'data:image/png;base64,' + result.hashhumbnail)
+              } else {
+                $('#image-thumb').attr('src', '')
+              }
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+        })
+
+        $('#get-license').click(function () {
+          const value = $('#id-val').val()
+
+          if (value === '') {
+            $('#result-area').text('아이디를 입력해주세요')
+            return
+          }
+
+          $.ajax({
+            url: ('/info/license'),
+            data: {id: value},
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              console.log(result)
+              $('#result-license').text(JSON.stringify(result))
+            },
+            error (e) {
+              console.log(e)
+            }
+          })
+
+          $.ajax({
+            url: ('/info/hash/license'),
+            data: {id: value},
+            dataType: 'json',
+            method: 'GET',
+            success (result) {
+              if (result.hashlicense) {
+                $('#image-license').attr('src', 'data:image/png;base64,' + result.hashlicense)
+              } else {
+                $('#image-license').attr('src', '')
+              }
             },
             error (e) {
               console.log(e)
@@ -188,29 +256,39 @@
         <div class="panel-heading">API 테스트</div>
         <div class="panel-body">
           <div class="row" style="text-align: center;">
-            <button id="data-count" class="btn btn-default">GET /info/DataCount</button>
-            <button id="config-info" class="btn btn-default">GET /info/ConfigInfo</button>
-            <button id="resorce-size" class="btn btn-default">GET /info/ResorceSize</button>
+            <button id="data-count" class="btn btn-default">GET /info/datacount</button>
+            <button id="config-info" class="btn btn-default">GET /info/setting</button>
+          </div>
+          <div class="row" style="text-align: center; margin-top: 50px;">
+            <div style="margin: auto; display: inline-block;">
+              <input placeholder="start" id="start-val" class="form-control" style="width: 70px;">
+              <input placeholder="count" id="count-val" class="form-control" style="width: 70px;">
+            </div>
             <button id="get-all" class="btn btn-default">GET /data</button>
-            <button id="del-all" class="btn btn-default">DELETE /data</button>
           </div>
           <div class="row" style="text-align: center; margin-top: 50px;">
             <div style="margin: auto; display: inline-block;">
               <input placeholder=":id" id="id-val" class="form-control" style="width: 100px;">
             </div>
-            <button id="get-id" class="btn btn-primary">GET /data/:id</button>
-            <button id="del-id" class="btn btn-danger">DELETE /data/:id</button>
+            <br><br>
+            <button id="get-id" class="btn btn-primary">GET /info/origin &amp; GET /info/hash/origin &amp; GET /info/hash/thumbnail</button>
+            <br><br>
+            <button id="get-license" class="btn btn-default">GET /info/license &amp; GET /info/hash/license</button>
+            <br><br>
+            <button id="del-id" class="btn btn-danger">DELETE /delete/image</button>
           </div>
         </div>
       </div>
       <div class="panel panel-default" style="margin-bottom: 10px;">
-          <div class="panel-heading">결과</div>
-          <div class="panel-body" id="result-area"></div>
+        <div class="panel-heading">결과</div>
+        <div class="panel-body" id="result-area"></div>
       </div>
       <div class="panel panel-primary" style="margin-bottom: 100px;">
         <div class="panel-heading">저작물 조회 정보</div>
         <div class="panel-body">
           <div id="image-area" style="text-align: center; margin-bottom: 50px;">
+            <img id="image-license">
+            <img id="image-thumb">
             <img id="image">
           </div>
           <table class="table table-hover table-bordered">
