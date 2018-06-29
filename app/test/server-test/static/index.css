@@ -1,0 +1,101 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+header {
+  width: 100%;
+  height: 80px;
+  background-color: rgb(103, 163, 197);
+  box-shadow: 10px 0px 10px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  line-height: 80px;
+}
+
+#title {
+  display: inline-block;
+  margin-left: 10px;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+#menu {
+  float: right;
+  margin-right: 10px;
+}
+
+#menu a {
+  color: #fff;
+}
+
+.container {
+  margin: auto;
+  margin-top: 50px;
+  padding: 20px;
+  width: 60%;
+  background-color: #fff;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.content-title {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: rgb(103, 163, 197);
+  margin-bottom: 25px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-top: 10px;
+    width: 86%;
+  }
+}
+
+button {
+  outline: none;
+  cursor: pointer;
+  border: 1px solid rgb(103, 163, 197);
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 7px 14px;
+  color: rgb(103, 163, 197);
+  transition: 0.5s;
+}
+
+button:hover {
+  background-color: rgb(103, 163, 197);
+  color: #fff;
+}
+
+input {
+  outline: none;
+  border: 1px solid rgb(103, 163, 197);
+  background-color: #fff;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+#result-area {
+  word-break:break-all;
+}
+
+#image-area {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.table {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#image {
+  width: 80%;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+}

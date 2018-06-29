@@ -2,308 +2,173 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>FLASK REST API</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script>
-      $(function () {
-        $('#data-count').click(function () {
-          $.ajax({
-            url: '/info/datacount',
-            dataType: 'json',
-            method: 'GET',
-            success (result) {
-              console.log(result)
-              $('#result').html('')
-              $('#image').attr('src', '')
-              $('#result-area').text(JSON.stringify(result))
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#config-info').click(function () {
-          $.ajax({
-            url: '/info/setting',
-            dataType: 'json',
-            method: 'GET',
-            success (result) {
-              console.log(result)
-              $('#result').html('')
-              $('#image').attr('src', '')
-              $('#result-area').text(JSON.stringify(result))
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#get-all').click(function () {
-          const start = $('#start-val').val()
-          const count = $('#count-val').val()
-
-          $.ajax({
-            url: `/data?start=${start}&count=${count}`,
-            dataType: 'json',
-            method: 'GET',
-            success (result) {
-              let count = 0
-              console.log(result.list)
-              $('#result').html('')
-              $('#result-area').html('')
-              $('#image').attr('src', '')
-              for (let image of result.list) {
-                $('#result-area').append(`<img style="width: 100px; height: 100px;"src="data:image/png;base64,${image.hash}"><br>`)
-                $('#result-area').append(`저작물 ID: ${image.id}<br>해시값은 임시로 대체 됨<br>${JSON.stringify(image.info)}<br><br><br>`)
-              }
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#del-all').click(function () {
-          $.ajax({
-            url: '/data',
-            dataType: 'json',
-            method: 'DELETE',
-            success (result) {
-              console.log(result)
-              $('#result').html('')
-              $('#image').attr('src', '')
-              $('#result-area').text(result.result)
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#get-id').click(function () {
-          const value = $('#id-val').val()
-
-          if (value === '') {
-            $('#result').text('아이디를 입력해주세요')
-            return
-          }
-          
-          $.ajax({
-            url: '/info/original',
-            data: {id: value},
-            dataType: 'json',
-            method: 'GET',
-            async: false,
-            success (result) {
-              console.log(result)
-              $('#result-area').text(JSON.stringify(result))
-              
-              /* 기존 영역 지우기 */
-              $('#result').html('')
-              try {
-                Object.keys(result).forEach(k => {
-                  if (result[k]) {
-                    let row = 
-                    `<tr>
-                      <td>${k.toUpperCase()}</td>
-                      <td>${result[k]}</td>
-                    </tr>`
-
-                    /* 표 영역에 추가 */
-                    $('#result').append(row)
-                  }
-                })
-              } catch (e) {
-                console.log('저작물이 없습니다.')
-              }
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-          
-          $.ajax({
-            url: '/info/hash/original',
-            data: {id: value},
-            dataType: 'json',
-            method: 'GET',
-            async: false,
-            success (result) {
-              console.log(result)
-              /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
-              if (result.hashimg) {
-                $('#image').attr('src', 'data:image/png;base64,' + result.hashimg)
-              } else {
-                $('#image').attr('src', '')
-              }
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-
-          $.ajax({
-            url: '/info/hash/thumbnail',
-            data: {id: value},
-            dataType: 'json',
-            method: 'GET',
-            async: false,
-            success (result) {
-              console.log(result)
-              /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
-              if (result.hashthumbnail) {
-                $('#image-thumb').attr('src', 'data:image/png;base64,' + result.hashhumbnail)
-              } else {
-                $('#image-thumb').attr('src', '')
-              }
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#get-license').click(function () {
-          const value = $('#id-val').val()
-
-          if (value === '') {
-            $('#result-area').text('아이디를 입력해주세요')
-            return
-          }
-
-          $.ajax({
-            url: ('/info/license'),
-            data: {id: value},
-            dataType: 'json',
-            method: 'GET',
-            success (result) {
-              console.log(result)
-              $('#result-license').text(JSON.stringify(result))
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-
-          $.ajax({
-            url: ('/info/hash/license'),
-            data: {id: value},
-            dataType: 'json',
-            method: 'GET',
-            success (result) {
-              if (result.hashlicense) {
-                $('#image-license').attr('src', 'data:image/png;base64,' + result.hashlicense)
-              } else {
-                $('#image-license').attr('src', '')
-              }
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-
-        $('#del-id').click(function () {
-          const value = $('#id-val').val()
-
-          if (value === '') {
-            $('#result-area').text('아이디를 입력해주세요')
-            return
-          }
-
-          $.ajax({
-            url: ('/data/' + value),
-            dataType: 'json',
-            method: 'DELETE',
-            success (result) {
-              console.log(result)
-              $('#result').text(JSON.stringify(result))
-            },
-            error (e) {
-              console.log(e)
-            }
-          })
-        })
-      })
-    </script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
     <style>
-      
-      button {
-        margin: 0px 5px;
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
       }
 
+      header {
+        width: 100%;
+        height: 80px;
+        background-color: rgb(103, 163, 197);
+        box-shadow: 10px 0px 10px rgba(0, 0, 0, 0.3);
+        color: #fff;
+        line-height: 80px;
+      }
+
+      #title {
+        display: inline-block;
+        margin-left: 10px;
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
+
+      #menu {
+        float: right;
+        margin-right: 10px;
+      }
+
+      #menu a {
+        color: #fff;
+      }
+
+      .container {
+        margin: auto;
+        margin-top: 50px;
+        padding: 20px;
+        width: 60%;
+        background-color: #fff;
+        border-radius: 5px;
+        text-align: center;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .content-title {
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: rgb(103, 163, 197);
+        margin-bottom: 25px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin-top: 10px;
+          width: 86%;
+        }
+      }
+
+      button {
+        outline: none;
+        cursor: pointer;
+        border: 1px solid rgb(103, 163, 197);
+        background-color: #fff;
+        border-radius: 20px;
+        padding: 7px 14px;
+        color: rgb(103, 163, 197);
+        transition: 0.5s;
+      }
+
+      button:hover {
+        background-color: rgb(103, 163, 197);
+        color: #fff;
+      }
+
+      input {
+        outline: none;
+        border: 1px solid rgb(103, 163, 197);
+        background-color: #fff;
+        padding: 5px 15px;
+        border-radius: 5px;
+      }
+
+      #result-area {
+        word-break:break-all;
+      }
+
+      #image-area {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+
+      .table {
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      #image {
+        width: 80%;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+      }
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-inverse">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/">Flask REST API TEST</a>
-        </div>
-        <ul class="nav navbar-nav">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="https://github.com/leegeunhyeok/Python-GonguCrawler/tree/master/app/test/server-test">SourceCode</a></li>
-        </ul>
+    <header>
+      <div id="title">
+        공유마당
       </div>
-    </nav>
+      <div id="menu">
+        <a href="https://github.com/leegeunhyeok/Python-GonguCrawler/tree/master/app/test/server-test">SourceCode</a>
+      </div>
+    </header>
     <div class="container">
-      <div class="panel panel-default">
-        <div class="panel-heading">API 테스트</div>
-        <div class="panel-body">
-          <div class="row" style="text-align: center;">
-            <button id="data-count" class="btn btn-default">GET /info/datacount</button>
-            <button id="config-info" class="btn btn-default">GET /info/setting</button>
+      <div class="content-title">API 테스트</div>
+      <div class="panel-body">
+        <div class="row" style="text-align: center;">
+          <button id="data-count" class="btn btn-default">GET /info/datacount</button>
+          <button id="config-info" class="btn btn-default">GET /info/setting</button>
+        </div>
+        <div class="row" style="text-align: center; margin-top: 50px;">
+          <div style="margin: auto; display: inline-block;">
+            <input placeholder="start" id="start-val" class="form-control" style="width: 70px;">
+            <input placeholder="count" id="count-val" class="form-control" style="width: 70px;">
           </div>
-          <div class="row" style="text-align: center; margin-top: 50px;">
-            <div style="margin: auto; display: inline-block;">
-              <input placeholder="start" id="start-val" class="form-control" style="width: 70px;">
-              <input placeholder="count" id="count-val" class="form-control" style="width: 70px;">
-            </div>
-            <button id="get-all" class="btn btn-default">GET /data</button>
+          <button id="get-all" class="btn btn-default">GET /data</button>
+        </div>
+        <div class="row" style="text-align: center; margin-top: 50px;">
+          <div style="margin: auto; display: inline-block;">
+            <input placeholder=":id" id="id-val" class="form-control" style="width: 100px;">
           </div>
-          <div class="row" style="text-align: center; margin-top: 50px;">
-            <div style="margin: auto; display: inline-block;">
-              <input placeholder=":id" id="id-val" class="form-control" style="width: 100px;">
-            </div>
-            <br><br>
-            <button id="get-id" class="btn btn-primary">GET /info/origin &amp; GET /info/hash/origin &amp; GET /info/hash/thumbnail</button>
-            <br><br>
-            <button id="get-license" class="btn btn-default">GET /info/license &amp; GET /info/hash/license</button>
-            <br><br>
-            <button id="del-id" class="btn btn-danger">DELETE /delete/image</button>
-          </div>
+          <br><br>
+          <button id="get-id" class="btn btn-primary">GET /info/origin &amp; GET /info/hash/origin &amp; GET /info/hash/thumbnail</button>
+          <br><br>
+          <button id="get-license" class="btn btn-default">GET /info/license &amp; GET /info/hash/license</button>
+          <br><br>
+          <button id="del-id" class="btn btn-danger">DELETE /delete/image</button>
         </div>
       </div>
-      <div class="panel panel-default" style="margin-bottom: 10px;">
-        <div class="panel-heading">결과</div>
-        <div class="panel-body" id="result-area"></div>
+    </div>
+    <div class="container">
+        <div class="content-title">JSON</div>
+      <div id="result-area"></div>
+    </div>
+    <div class="container" style="margin-bottom: 50px;">
+      <div class="content-title">저작물 조회 정보</div>
+      <div id="image-area">
+        <img id="image-license"><br>
+        <img id="image-thumb"><br>
+        <img id="image"><br>
       </div>
-      <div class="panel panel-primary" style="margin-bottom: 100px;">
-        <div class="panel-heading">저작물 조회 정보</div>
-        <div class="panel-body">
-          <div id="image-area" style="text-align: center; margin-bottom: 50px;">
-            <img id="image-license">
-            <img id="image-thumb">
-            <img id="image">
-          </div>
-          <table class="table table-hover table-bordered">
-            <thead>
-              <tr>
-                <th width="30%">상세정보</th>
-                <th>내용</th>
-              </tr>
-            </thead>
-            <tbody id="result">
-              <!-- 상세정보 내용 -->
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="30%">상세정보</th>
+            <th>내용</th>
+          </tr>
+        </thead>
+        <tbody id="result">
+          <!-- 상세정보 내용 -->
+        </tbody>
+      </table>
     </div>
   </body>
 </html>
