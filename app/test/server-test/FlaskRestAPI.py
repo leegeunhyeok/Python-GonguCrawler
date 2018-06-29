@@ -36,8 +36,8 @@ def config_info():
     # 설정정보 (임시 데이터)
     return json.dumps({"process": 8, "create_origin": True, "create_thumbnail": False, "create_license": True, "auto_reset": False, "auto_crawling": False, "sleep_count": 10, "sleep_time": 1})
 
-# GET /data
-@app.route('/data', methods=['GET'])
+# GET /info/datarange
+@app.route('/info/datarange', methods=['GET'])
 def get_data_all():
     result = []
     start = request.args.get("start")

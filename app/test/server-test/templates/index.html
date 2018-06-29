@@ -109,6 +109,19 @@
         border-radius: 5px;
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
       }
+
+      .list-image-area {
+        display: inline-block;
+        border: 1px solid #eee;
+        width: 20%;
+      }
+
+      .list-image {
+        width: 100%;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+      }
     </style>
   </head>
   <body>
@@ -148,10 +161,10 @@
       </div>
     </div>
     <div class="container">
-        <div class="content-title">JSON</div>
+      <div class="content-title">JSON</div>
       <div id="result-area"></div>
     </div>
-    <div class="container" style="margin-bottom: 50px;">
+    <div class="container">
       <div class="content-title">저작물 조회 정보</div>
       <div id="image-area">
         <img id="image-license"><br>
@@ -169,6 +182,16 @@
           <!-- 상세정보 내용 -->
         </tbody>
       </table>
+    </div>
+    <div class="container" style="margin-bottom: 50px;">
+      <div id="page-image-list">
+      </div>
+      <div class="page">
+        <button id="first">처음</button>
+        <button id="prev">이전</button>
+        <button id="next">다음</button>
+        <button id="last">끝</button>
+      </div>
     </div>
   </body>
 </html>

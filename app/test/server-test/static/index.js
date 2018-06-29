@@ -1,4 +1,21 @@
 $(function () {
+  let lastPage = 1
+  let currentPage = 0
+
+  $.ajax({
+    url: '/info/datacount',
+    dataType: 'json',
+    method: 'GET',
+    async: false,
+    success (result) {
+      lastPage = result.count
+      console.log(lastPage)
+    },
+    error (e) {
+      console.log(e)
+    }
+  })
+
   $('#data-count').click(function () {
     $.ajax({
       url: '/info/datacount',
@@ -35,7 +52,7 @@ $(function () {
     const start = $('#start-val').val()
     const count = $('#count-val').val()
     $.ajax({
-      url: `/data?start=${start}&count=${count}`,
+      url: `/info/datarange?start=${start}&count=${count}`,
       dataType: 'json',
       method: 'GET',
       success (result) {
@@ -198,6 +215,122 @@ $(function () {
       success (result) {
         console.log(result)
         $('#result').text(JSON.stringify(result))
+      },
+      error (e) {
+        console.log(e)
+      }
+    })
+  })
+
+  $('#next').click(function () {
+    currentPage += 1
+    const start = (currentPage - 1) * 9
+    $.ajax({
+      url: ('/info/datarange'),
+      data: {start: start, count: 10},
+      dataType: 'json',
+      method: 'GET',
+      success (result) {
+        console.log(result.list)
+        $('#page-image-list').html('')
+        for (let image of result.list) {
+          html = `
+          <div class="list-image-area">
+            ${image.info.filename}
+            <br>
+            <img class="list-image" src="data:image/png;base64,${image.hash}">
+          </div>
+          `
+          $('#page-image-list').append(html)
+        }
+        $('#page-image-list').append(`<br><br><b>${currentPage} 페이지</b>`)
+      },
+      error (e) {
+        console.log(e)
+      }
+    })
+  })
+
+  $('#prev').click(function () {
+    currentPage -= 1
+    const start = (currentPage - 1) * 9
+    $.ajax({
+      url: ('/info/datarange'),
+      data: {start: start, count: 10},
+      dataType: 'json',
+      method: 'GET',
+      success (result) {
+        console.log(result.list)
+        $('#page-image-list').html('')
+        for (let image of result.list) {
+          html = `
+          <div class="list-image-area">
+            ${image.info.filename}
+            <br>
+            <img class="list-image" src="data:image/png;base64,${image.hash}">
+          </div>
+          `
+          $('#page-image-list').append(html)
+        }
+        $('#page-image-list').append(`<br><br><b>${currentPage} 페이지</b>`)
+      },
+      error (e) {
+        console.log(e)
+      }
+    })
+  })
+
+  $('#first').click(function () {
+    currentPage = 1
+    const start = 0
+    $.ajax({
+      url: ('/info/datarange'),
+      data: {start: start, count: 10},
+      dataType: 'json',
+      method: 'GET',
+      success (result) {
+        console.log(result.list)
+        $('#page-image-list').html('')
+        for (let image of result.list) {
+          html = `
+          <div class="list-image-area">
+            ${image.info.filename}
+            <br>
+            <img class="list-image" src="data:image/png;base64,${image.hash}">
+          </div>
+          `
+          $('#page-image-list').append(html)
+        }
+        $('#page-image-list').append(`<br><br><b>${currentPage} 페이지</b>`)
+      },
+      error (e) {
+        console.log(e)
+      }
+    })
+  })
+
+  $('#last').click(function () {
+    /* TODO: 마지막 페이지로 이동 문제 있음. */
+    const start = currentPage = parseInt(lastPage / 10)
+    $.ajax({
+      url: ('/info/datarange'),
+      data: {start: start, count: 10},
+      dataType: 'json',
+      method: 'GET',
+      success (result) {
+        console.log(result.list)
+        $('#page-image-list').html('')
+        for (let image of result.list) {
+          html = `
+          <div class="list-image-area">
+            ${image.info.filename}
+            <br>
+            <img class="list-image" src="data:image/png;base64,${image.hash}">
+          </div>
+          `
+          $('#page-image-list').append(html)
+        }
+        $('#page-image-list').append(`<br><br><b>${currentPage} 페이지</b>`)
       },
       error (e) {
         console.log(e)
