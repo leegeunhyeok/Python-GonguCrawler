@@ -11,7 +11,7 @@ import shutil
 import sys
 import base64
 import zlib
-from io import BytesIO
+import io
 
 # 설정파일 관련 모듈 Import
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(os.path.dirname(__file__))), './common'))
@@ -244,12 +244,9 @@ class Crawler:
 			# 원본 이미지 가져오기
 			origin_image = urllib.request.urlopen(base_url + img_src).read()
 
-			try:
-				# 인코딩 데이터 저장
-				cur.execute("INSERT INTO image VALUES (%s, %s, %s)", (_id, file_name, origin_image))
-				conn.commit()
-			except:
-				self.save_log("{} : {}".format(_id, "Origin image hash data save error"))
+			# 인코딩 데이터 저장
+			cur.execute("INSERT INTO image VALUES (%s, %s, %s)", (_id, file_name, origin_image))
+			conn.commit()
 
 			# 설정의 원본 이미지 생성 여부가 True인 경우 이미지 생성(이미 존재할 경우 건너뜀)
 			if self.config["IMAGE"]["ORIGIN"]:
@@ -258,12 +255,9 @@ class Crawler:
 						origin.write(origin_image)
 				else:
 					print("> 이미 존재하는 이미지:", file_name)
-
-				# 썸네일 이미지 저장(해시값 및 이미지)
-				if not self.duplicateCheck(file_name, self.thumbnail_path):
-					self.create_thumbnail(_id, file_name, conn, cur)
-				else:
-					print("> 이미 존재하는 썸네일 이미지:", file_name)
+			
+			# 썸네일 이미지 생성 및 저장
+			self.create_thumbnail(origin_image, _id, file_name, conn, cur)
 
 			# 맨 뒤에 컬럼 수 데이터 추가
 			attr += "col_size)"
@@ -363,33 +357,42 @@ class Crawler:
 	# @param: 이미지 명
 	# @param: DB 커넥션
 	# @param: DB 커서
-	def create_thumbnail(self, _id, image_name, conn, cur):
+	def create_thumbnail(self, origin, _id, file_name, conn, cur):
 		try:
-			img = Image.open(self.origin_path + image_name)
+			# 원본 이미지 데이터 스트림에 보관
+			origin = io.BytesIO(origin)
 
-			# 만약 원본 이미지가 RGB 모드가 아닐 경우 RGB 모드로 변환
+			# 썸네일 데이터를 저장할 다른 스트림
+			thumbnail = io.BytesIO()
+
+			# 원본 이미지 데이터가 있는 스트림 열기
+			img = Image.open(origin)
+
+			# RGB 모드가 아닐 경우 RGB 모드로 변환
 			if img.mode != "RGB":
 				img = img.convert("RGB")
-			img.thumbnail((200, 200))
-			
-			output = BytesIO()
-			img.save(output, format='PNG')
 
-			thumbnail = output.getvalue()
-			output.close()
+			img.thumbnail((200, 200))
+			img.save(thumbnail, format="PNG")
+
+			# 썸네일 이미지 저장(해시값 및 이미지)
+			if self.config["IMAGE"]["THUMBNAIL"]:
+				if not self.duplicateCheck(file_name, self.thumbnail_path):
+					img.save(file_name)
+				else:
+					print("> 이미 존재하는 썸네일 이미지:", file_name)
 
 			# DB에 해시값 저장
-			cur.execute("INSERT INTO thumbnail VALUES (%s, %s, %s)", (_id, image_name, thumbnail))
+			cur.execute("INSERT INTO thumbnail VALUES (%s, %s, %s)", (_id, file_name, thumbnail.getvalue()))
 			conn.commit()
 
-			# 설정을 참조하여 썸네일 이미지 로컬에 저장
-			if self.config["IMAGE"]["THUMBNAIL"]:
-				img.save(self.thumbnail_path + image_name)
-
 			img.close()
+			origin.close()
+			thumbnail.close()
+
 		except Exception as e:
 			print(e)
-			self.save_log("THUMBNAIL ERROR: {}".format(image_name))
+			self.save_log("THUMBNAIL ERROR: {}".format(file_name))
 
 	# 해당 저작물 ID와 에러 메시지 로그에 저장
 	# @param 저장할 메시지
@@ -430,14 +433,10 @@ class Crawler:
 		print("> 크롤러 실행: {}".format(self.start_time))
 
 		# 시작 페이지
-		start_page = 1 
+		start_page = 1
 		
 		# 프로세스 수
 		process_count = self.config["PROCESS"]
-
-		if not self.config["IMAGE"]["ORIGIN"] and self.config["IMAGE"]["THUMBNAIL"]:
-			self.save_log("> Warning: Original image will not download. Can't create thumbnail image")
-			print("> 주의: 원본 이미지는 다운로드 되지 않습니다. 썸네일 이미지 생성이 불가능합니다.")
 
 		if self.config["AUTO_CRAWLING"]:
 			# 전체 페이지 수
@@ -507,7 +506,8 @@ class Crawler:
 
 		# 재시도 시작  시간
 		start_time = time.time()
-
+		if input(self.start_time + ".log 파일을 불러오겠습니까? (y/n)") == "n":
+			self.start_time = input("로그파일명을 직접 입력해주세요 (.log 제외): ")
 		try:
 			self.save_log("\n\n\n> Trying error image crawling: {} sec\n".format(progress_time))
 			print("\n\n> 문제 발생 저작물 크롤링 재시도")

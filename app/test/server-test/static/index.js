@@ -227,7 +227,7 @@ $(function () {
     const start = (currentPage - 1) * 9
     $.ajax({
       url: ('/info/datarange'),
-      data: {start: start, count: 10},
+      data: {start: start, count: 9},
       dataType: 'json',
       method: 'GET',
       success (result) {
@@ -236,8 +236,6 @@ $(function () {
         for (let image of result.list) {
           html = `
           <div class="list-image-area">
-            ${image.info.filename}
-            <br>
             <img class="list-image" src="data:image/png;base64,${image.hash}">
           </div>
           `
@@ -256,7 +254,7 @@ $(function () {
     const start = (currentPage - 1) * 9
     $.ajax({
       url: ('/info/datarange'),
-      data: {start: start, count: 10},
+      data: {start: start, count: 9},
       dataType: 'json',
       method: 'GET',
       success (result) {
@@ -285,7 +283,7 @@ $(function () {
     const start = 0
     $.ajax({
       url: ('/info/datarange'),
-      data: {start: start, count: 10},
+      data: {start: start, count: 9},
       dataType: 'json',
       method: 'GET',
       success (result) {
@@ -311,10 +309,11 @@ $(function () {
 
   $('#last').click(function () {
     /* TODO: 마지막 페이지로 이동 문제 있음. */
-    const start = currentPage = parseInt(lastPage / 10)
+    currentPage = parseInt((lastPage + 9) / 9)
+    const start = (currentPage-1) * 9
     $.ajax({
       url: ('/info/datarange'),
-      data: {start: start, count: 10},
+      data: {start: start, count: 9},
       dataType: 'json',
       method: 'GET',
       success (result) {

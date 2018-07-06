@@ -46,7 +46,7 @@ def get_data_all():
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         start_time = time.time() 
         cursor.execute("""
-            SELECT image._id AS id, image.image AS hash 
+            SELECT image._id AS id, image.hash_ AS hash 
             FROM (SELECT _id FROM image LIMIT {}, {}) t 
             JOIN image
             ON image._id = t._id
@@ -83,7 +83,7 @@ def get_image():
 @app.route('/info/hash/original', methods=['GET'])
 def get_image_hash():
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    result = cursor.execute("SELECT _id AS id, filename, image AS hashimg FROM image WHERE _id=%s", (request.args.get("id"), ))
+    result = cursor.execute("SELECT _id AS id, filename, hash_ AS hashimg FROM image WHERE _id=%s", (request.args.get("id"), ))
     if result is 0:
         return json.dumps({})
     hash_data = cursor.fetchone()
