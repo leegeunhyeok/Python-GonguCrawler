@@ -13,7 +13,6 @@ import time
 def get_connection():
     return pymysql.connect(host="localhost", port=3306, user="root", password="1234", db="python", charset="utf8", connect_timeout=5, write_timeout=5)
 
-
 # GET /
 @app.route('/', methods=['GET'])
 def index(): 
@@ -23,8 +22,8 @@ def index():
 @app.route('/info/datacount', methods=['GET'])
 def data_count():
     conn = get_connection()
-    # 저장된 데이터 수
     cursor = conn.cursor(pymysql.cursors.DictCursor)
+    # 저장된 데이터 수
     cursor.execute("SELECT count(*) AS count FROM crawler")
     result = cursor.fetchone()
     cursor.close()

@@ -272,8 +272,6 @@ $(function () {
         for (let image of result.list) {
           html = `
           <div class="list-image-area">
-            ${image.info.filename}
-            <br>
             <img class="list-image" src="data:image/png;base64,${image.hash}">
           </div>
           `
@@ -302,8 +300,6 @@ $(function () {
         for (let image of result.list) {
           html = `
           <div class="list-image-area">
-            ${image.info.filename}
-            <br>
             <img class="list-image" src="data:image/png;base64,${image.hash}">
           </div>
           `
@@ -332,8 +328,6 @@ $(function () {
         for (let image of result.list) {
           html = `
           <div class="list-image-area">
-            ${image.info.filename}
-            <br>
             <img class="list-image" src="data:image/png;base64,${image.hash}">
           </div>
           `
