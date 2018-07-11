@@ -3,31 +3,32 @@
 
 import base64
 import pymysql
-from flask_restful import reqparse
 from flask import Flask, request, render_template, json
-from flask_cors import CORS
 
 app = Flask (__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
 
 import time
 
 # DB 커넥션 생성
-conn = pymysql.connect(host="localhost", port=3306, user="root", password="1234", db="python", charset="utf8", connect_timeout=5, write_timeout=5)
+def get_connection():
+    return pymysql.connect(host="localhost", port=3306, user="root", password="1234", db="python", charset="utf8", connect_timeout=5, write_timeout=5)
+
 
 # GET /
-@app.route('/',methods=['GET'])
+@app.route('/', methods=['GET'])
 def index(): 
     return render_template("./index.html")
 
 # GET /info/datacount
 @app.route('/info/datacount', methods=['GET'])
 def data_count():
+    conn = get_connection()
     # 저장된 데이터 수
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT count(*) AS count FROM crawler")
     result = cursor.fetchone()
     cursor.close()
+    conn.close()
     return json.dumps({"count": result["count"]})
 
 # GET /info/setting
@@ -43,6 +44,7 @@ def get_data_all():
     start = request.args.get("start")
     count = request.args.get("count")
     if start and count: 
+        conn = get_connection()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         start_time = time.time() 
         cursor.execute("""
@@ -61,6 +63,7 @@ def get_data_all():
             temp["info"] = result_info
             result.append(temp)
         cursor.close()
+        conn.close()
         return json.dumps({"list": result})
     else:
         return json.dumps({"list": []})
@@ -68,15 +71,15 @@ def get_data_all():
 # GET /info/original
 @app.route('/info/original', methods=['GET'])
 def get_image():
+    conn = get_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    print(request.args.get("id"))
     query = "SELECT * FROM crawler WHERE _id=" + request.args.get("id")
-    print(query)
     result = cursor.execute(query)
-    if result is 0:
-        return json.dumps({})
     info = cursor.fetchone()
     cursor.close()
+    conn.close()
+    if result is 0:
+        return json.dumps({})
     return json.dumps(info)
 
 # GET /info/hash/original
@@ -84,44 +87,53 @@ def get_image():
 def get_image_hash():
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     result = cursor.execute("SELECT _id AS id, filename, hash_ AS hashimg FROM image WHERE _id=%s", (request.args.get("id"), ))
+    hash_data = cursor.fetchone()
+    hash_data["hashimg"] = str(base64.b64encode(hash_data["hashimg"]))[2:-1]
+    cursor.close()
+    conn.close()
     if result is 0:
         return json.dumps({})
-    hash_data = cursor.fetchone()
-    cursor.close()
-    hash_data["hashimg"] = str(base64.b64encode(hash_data["hashimg"]))[2:-1]
     return json.dumps(hash_data)
 
 # GET /info/license
 @app.route('/info/license', methods=['GET'])
 def get_license():
+    conn = get_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     result = cursor.execute("SELECT license_name AS licensename, license AS filename FROM crawler WHERE _id=%s", (request.args.get("id")))
-    if result is 0:
-        return json.dumps({})
+    
     license_data = cursor.fetchone()
     cursor.close()
+    conn.close()
+
+    if result is 0:
+        return json.dumps({})
     return json.dumps(license_data)
     
 # GET /info/hash/license
 @app.route('/info/hash/license', methods=['GET'])
 def get_license_hash():
+    conn = get_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     result = cursor.execute("""
     SELECT l.license AS id, l.license_name AS license_name, l.hash_ AS hashlicense 
     FROM license l, crawler c WHERE l.license=c.license AND c._id=%s
     """, (request.args.get("id")))
 
+    license_data = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
     if result is 0:
         return json.dumps({})
 
-    license_data = cursor.fetchone()
-    cursor.close()
     license_data["hashlicense"] = str(base64.b64encode(license_data["hashlicense"]))[2:-1]
     return json.dumps(license_data)
 
 # GET /info/hash/thumbnail
 @app.route('/info/hash/thumbnail', methods=['GET'])
 def get_thumbnail_hash():
+    conn = get_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     result = cursor.execute("SELECT _id AS id, filename, hash_ AS hashthumbnail FROM thumbnail WHERE _id=%s", (request.args.get("id")))
 
@@ -135,7 +147,8 @@ def get_thumbnail_hash():
 # DELETE /delete/image
 @app.route('/delete/image', methods=['DELETE'])
 def del_data_all(): 
-    return json.dumps({"result": "전체 데이터 DELETE"})
+    return json.dumps({"result": "데이터 DELETE"})
 
 if __name__ == "__main__":
     app.run(debug=True)
+    conn.close()

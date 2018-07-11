@@ -139,26 +139,26 @@
       <div class="content-title">API 테스트</div>
       <div class="panel-body">
         <div class="row" style="text-align: center;">
-          <button id="data-count" class="btn btn-default">GET /info/datacount</button>
-          <button id="config-info" class="btn btn-default">GET /info/setting</button>
+          <button id="data-count" class="btn btn-default">데이터 수</button>
+          <button id="config-info" class="btn btn-default">크롤러 설정 정보</button>
         </div>
         <div class="row" style="text-align: center; margin-top: 50px;">
           <div style="margin: auto; display: inline-block;">
             <input placeholder="start" id="start-val" class="form-control" style="width: 70px;">
             <input placeholder="count" id="count-val" class="form-control" style="width: 70px;">
           </div>
-          <button id="get-all" class="btn btn-default">GET /data</button>
+          <button id="get-all" class="btn btn-default">범위 데이터 조회</button>
         </div>
         <div class="row" style="text-align: center; margin-top: 50px;">
           <div style="margin: auto; display: inline-block;">
             <input placeholder=":id" id="id-val" class="form-control" style="width: 100px;">
           </div>
           <br><br>
-          <button id="get-id" class="btn btn-primary">GET /info/origin &amp; GET /info/hash/origin &amp; GET /info/hash/thumbnail</button>
+          <button id="get-id" class="btn btn-primary">해당 ID의 상세정보, 원본 이미지, 썸네일 이미지</button>
           <br><br>
-          <button id="get-license" class="btn btn-default">GET /info/license &amp; GET /info/hash/license</button>
+          <button id="get-license" class="btn btn-default">해당 ID의 라이선스 이미지 조회</button>
           <br><br>
-          <button id="del-id" class="btn btn-danger">DELETE /delete/image</button>
+          <button id="del-id" class="btn btn-danger">해당 ID 저작물 삭제</button>
         </div>
       </div>
     </div>
@@ -186,6 +186,7 @@
       </table>
     </div>
     <div class="container" style="margin-bottom: 50px;">
+      <h3>페이징 기능 테스트</h3>
       <div id="page-image-list">
       </div>
       <div class="page">
@@ -193,6 +194,10 @@
         <button id="prev">이전</button>
         <button id="next">다음</button>
         <button id="last">끝</button>
+      </div>
+      <div class="page">
+        <input id="goto-page" type="number" placeholder="페이지">
+        <button id="goto">지정 페이지 이동</button>
       </div>
     </div>
   </body>
