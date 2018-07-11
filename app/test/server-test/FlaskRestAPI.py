@@ -84,6 +84,7 @@ def get_image():
 # GET /info/hash/original
 @app.route('/info/hash/original', methods=['GET'])
 def get_image_hash():
+    conn = get_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     result = cursor.execute("SELECT _id AS id, filename, hash_ AS hashimg FROM image WHERE _id=%s", (request.args.get("id"), ))
     hash_data = cursor.fetchone()
@@ -136,11 +137,14 @@ def get_thumbnail_hash():
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     result = cursor.execute("SELECT _id AS id, filename, hash_ AS hashthumbnail FROM thumbnail WHERE _id=%s", (request.args.get("id")))
 
-    if result is 0:
-        return json.dumps({})
-    
     thumbnail_data = cursor.fetchone()
+    if not thumbnail_data:
+        return json.dumps({})
+
     cursor.close()
+    conn.close()
+
+    thumbnail_data["hashthumbnail"] = str(base64.b64encode(thumbnail_data["hashthumbnail"]))[2:-1]
     return json.dumps(thumbnail_data)
 
 # DELETE /delete/image

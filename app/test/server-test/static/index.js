@@ -151,7 +151,7 @@ $(function () {
         console.log(result)
         /* 응답 객체에 해시데이터가 있을 경우 이미지 출력 */
         if (result.hashthumbnail) {
-          $('#image-thumb').attr('src', 'data:image/png;base64,' + result.hashhumbnail)
+          $('#image-thumb').attr('src', 'data:image/png;base64,' + result.hashthumbnail)
         } else {
           $('#image-thumb').attr('src', '')
         }
